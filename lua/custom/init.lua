@@ -33,12 +33,29 @@ vim.api.nvim_create_autocmd('FileType', {
 -- Plugins
 -- ============================================================
 
--- Telescope live grep args
+-- Telescope live grep args + custom defaults
 vim.pack.add { gh 'nvim-telescope/telescope-live-grep-args.nvim' }
+require('telescope').setup {
+  defaults = {
+    vimgrep_arguments = {
+      'rg', '--color=never', '--no-heading', '--with-filename',
+      '--line-number', '--column', '--smart-case', '--follow',
+    },
+    mappings = {
+      i = {
+        ['<C-j>'] = require('telescope.actions').cycle_history_next,
+        ['<C-k>'] = require('telescope.actions').cycle_history_prev,
+      },
+    },
+  },
+}
 pcall(require('telescope').load_extension, 'live_grep_args')
 
 -- vim-tmux-navigator
 vim.pack.add { gh 'christoomey/vim-tmux-navigator' }
+
+-- vim-fugitive (git commands via :G)
+vim.pack.add { gh 'tpope/vim-fugitive' }
 
 -- nvim-navic (breadcrumbs)
 vim.pack.add {
@@ -62,6 +79,17 @@ require('flash').setup {}
 -- vim-maximizer
 vim.pack.add { gh 'szw/vim-maximizer' }
 
+-- toggleterm
+vim.pack.add { gh 'akinsho/toggleterm.nvim' }
+require('toggleterm').setup {}
+
+-- diffview
+vim.pack.add { gh 'sindrets/diffview.nvim' }
+
+-- lazydev (better lua LSP for neovim config)
+vim.pack.add { gh 'folke/lazydev.nvim' }
+require('lazydev').setup {}
+
 -- neo-tree
 vim.pack.add {
   gh 'nvim-neo-tree/neo-tree.nvim',
@@ -73,9 +101,22 @@ require('neo-tree').setup {}
 -- LSP customizations
 -- ============================================================
 
--- Add pyright to LSP servers
+-- Disable stylua as LSP (it's a formatter, not an LSP server — upstream bug)
+vim.lsp.enable('stylua', false)
+
 vim.lsp.config('pyright', {})
 vim.lsp.enable('pyright')
+
+vim.lsp.config('clangd', {
+  cmd = {
+    'clangd',
+    '--background-index',
+    '--clang-tidy',
+    '--completion-style=detailed',
+    '--header-insertion=never',
+  },
+})
+vim.lsp.enable('clangd')
 
 -- nvim-navic attach on LspAttach
 vim.api.nvim_create_autocmd('LspAttach', {
@@ -168,7 +209,8 @@ vim.keymap.set('n', '<leader>ws', ':split<CR>', { desc = 'Horizontal split' })
 vim.keymap.set('n', '<leader>wo', ':%bd|e#<CR>', { desc = 'Close all buffers except current' })
 
 -- Neo-tree
-vim.keymap.set('n', '<leader>e', ':Neotree toggle<CR>', { desc = 'Toggle file explorer' })
+vim.keymap.set('n', '<leader>ee', ':Neotree toggle<CR>', { desc = 'Toggle file explorer' })
+vim.keymap.set('n', '<leader>er', ':Neotree reveal<CR>', { desc = 'Reveal file in Neo-tree' })
 
 -- Toggle relative line numbers
 vim.keymap.set('n', '<leader>wp', function()
